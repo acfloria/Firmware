@@ -101,7 +101,7 @@ SDP3X::init_sdp3x()
 	}
 
 	_scale = (((uint16_t)val[6]) << 8) | val[7];
-
+	PX4_INFO("SDP3X driver started.");
 	return true;
 }
 
