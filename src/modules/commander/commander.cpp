@@ -3870,7 +3870,7 @@ set_control_mode()
 		control_mode.flag_control_acceleration_enabled = false;
 		control_mode.flag_control_termination_enabled = false;
 		/* override is not ok in stabilized mode */
-		control_mode.flag_external_manual_override_ok = false;
+		control_mode.flag_external_manual_override_ok = true;
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_RATTITUDE:
