@@ -618,3 +618,131 @@ PARAM_DEFINE_FLOAT(FW_ACRO_Z_MAX, 45);
  * @group FW Attitude Control
  */
 PARAM_DEFINE_FLOAT(FW_RATT_TH, 0.8f);
+
+/**
+ * Roll trim for minimum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at minimum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_ROLL_VMAX
+ * are set to zero, the nominal TRIM_ROLL parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_R_VMIN, 0.0f);
+
+/**
+ * Pitch trim for minimum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at minimum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_PITCH_VMAX
+ * are set to zero, the nominal TRIM_PITCH parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_P_VMIN, 0.0f);
+
+/**
+ * Yaw trim for minimum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at minimum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_YAW_VMAX
+ * are set to zero, the nominal TRIM_YAW parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_Y_VMIN, 0.0f);
+
+/**
+ * Roll trim for maximum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at maximum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_ROLL_VMIN
+ * are set to zero, the nominal TRIM_ROLL parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_R_VMAX, 0.0f);
+
+/**
+ * Pitch trim for maximum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at maximum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_PITCH_VMIN
+ * are set to zero, the nominal TRIM_PITCH parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_P_VMAX, 0.0f);
+
+/**
+ * Yaw trim for maximum airspeed
+ *
+ * The trim value is the actuator control value the system needs
+ * for straight and level flight at maximum airspeed. It can be calibrated
+ * by flying manually straight and level using the RC trims and
+ * copying them using the GCS. If this param and TRIM_YAW_VMIN
+ * are set to zero, the nominal TRIM_YAW parameter is used.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_Y_VMAX, 0.0f);
+
+/**
+ * Roll trim increment for flaps configuration
+ *
+ * This increment is added to the roll trim whenever flaps are fully deployed.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_DTRIM_R_FLPS, 0.0f);
+
+/**
+ * Pitch trim increment for flaps configuration
+ *
+ * This increment is added to the pitch trim whenever flaps are fully deployed.
+ *
+ * @group FW Attitude Control
+ * @min -0.25
+ * @max 0.25
+ * @decimal 2
+ * @increment 0.01
+ */
+PARAM_DEFINE_FLOAT(FW_DTRIM_P_FLPS, 0.0f);

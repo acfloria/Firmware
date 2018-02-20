@@ -85,6 +85,14 @@ FixedwingAttitudeControl::FixedwingAttitudeControl() :
 	_parameter_handles.trim_roll = param_find("TRIM_ROLL");
 	_parameter_handles.trim_pitch = param_find("TRIM_PITCH");
 	_parameter_handles.trim_yaw = param_find("TRIM_YAW");
+	_parameter_handles.trim_roll_vmin = param_find("FW_TRIM_R_VMIN");
+	_parameter_handles.trim_pitch_vmin = param_find("FW_TRIM_P_VMIN");
+	_parameter_handles.trim_yaw_vmin = param_find("FW_TRIM_Y_VMIN");
+	_parameter_handles.trim_roll_vmax = param_find("FW_TRIM_R_VMAX");
+	_parameter_handles.trim_pitch_vmax = param_find("FW_TRIM_P_VMAX");
+	_parameter_handles.trim_yaw_vmax = param_find("FW_TRIM_Y_VMAX");
+	_parameter_handles.dtrim_roll_flaps = param_find("FW_DTRIM_R_FLPS");
+	_parameter_handles.dtrim_pitch_flaps = param_find("FW_DTRIM_P_FLPS");
 	_parameter_handles.rollsp_offset_deg = param_find("FW_RSP_OFF");
 	_parameter_handles.pitchsp_offset_deg = param_find("FW_PSP_OFF");
 
@@ -163,6 +171,33 @@ FixedwingAttitudeControl::parameters_update()
 	param_get(_parameter_handles.trim_roll, &(_parameters.trim_roll));
 	param_get(_parameter_handles.trim_pitch, &(_parameters.trim_pitch));
 	param_get(_parameter_handles.trim_yaw, &(_parameters.trim_yaw));
+	param_get(_parameter_handles.trim_roll_vmin, &(_parameters.trim_roll_vmin));
+	param_get(_parameter_handles.trim_roll_vmax, &(_parameters.trim_roll_vmax));
+
+	if (fabsf(_parameters.trim_roll_vmin) < 0.01f && fabsf(_parameters.trim_roll_vmax) < 0.01f) {
+		_parameters.trim_roll_vmin = _parameters.trim_roll;
+		_parameters.trim_roll_vmax = _parameters.trim_roll;
+	}
+
+	param_get(_parameter_handles.trim_pitch_vmin, &(_parameters.trim_pitch_vmin));
+	param_get(_parameter_handles.trim_pitch_vmax, &(_parameters.trim_pitch_vmax));
+
+	if (fabsf(_parameters.trim_pitch_vmin) < 0.01f && fabsf(_parameters.trim_pitch_vmax) < 0.01f) {
+		_parameters.trim_pitch_vmin = _parameters.trim_pitch;
+		_parameters.trim_pitch_vmax = _parameters.trim_pitch;
+	}
+
+	param_get(_parameter_handles.trim_yaw_vmin, &(_parameters.trim_yaw_vmin));
+	param_get(_parameter_handles.trim_yaw_vmax, &(_parameters.trim_yaw_vmax));
+
+	if (fabsf(_parameters.trim_yaw_vmin) < 0.01f && fabsf(_parameters.trim_yaw_vmax) < 0.01f) {
+		_parameters.trim_yaw_vmin = _parameters.trim_yaw;
+		_parameters.trim_yaw_vmax = _parameters.trim_yaw;
+	}
+
+	param_get(_parameter_handles.dtrim_roll_flaps, &(_parameters.dtrim_roll_flaps));
+	param_get(_parameter_handles.dtrim_pitch_flaps, &(_parameters.dtrim_pitch_flaps));
+
 	param_get(_parameter_handles.rollsp_offset_deg, &(_parameters.rollsp_offset_deg));
 	param_get(_parameter_handles.pitchsp_offset_deg, &(_parameters.pitchsp_offset_deg));
 	_parameters.rollsp_offset_rad = math::radians(_parameters.rollsp_offset_deg);
@@ -638,6 +673,32 @@ void FixedwingAttitudeControl::run()
 				control_input.groundspeed = groundspeed;
 				control_input.groundspeed_scaler = groundspeed_scaler;
 
+				/* bi-linear interpolation over airspeed for actuator trims */
+				float trim_roll = _parameters.trim_roll;
+				float trim_pitch = _parameters.trim_pitch;
+				float trim_yaw = _parameters.trim_yaw;
+
+				if (airspeed < _parameters.airspeed_trim) {
+					trim_roll = math::gradual(airspeed, _parameters.airspeed_min, _parameters.airspeed_trim,
+								  _parameters.trim_roll_vmin, _parameters.trim_roll);
+					trim_pitch = math::gradual(airspeed, _parameters.airspeed_min, _parameters.airspeed_trim,
+								   _parameters.trim_pitch_vmin, _parameters.trim_pitch);
+					trim_yaw = math::gradual(airspeed, _parameters.airspeed_min, _parameters.airspeed_trim,
+								 _parameters.trim_yaw_vmin, _parameters.trim_yaw);
+
+				} else {
+					trim_roll = math::gradual(airspeed, _parameters.airspeed_trim, _parameters.airspeed_max,
+								  _parameters.trim_roll, _parameters.trim_roll_vmax);
+					trim_pitch = math::gradual(airspeed, _parameters.airspeed_trim, _parameters.airspeed_max,
+								   _parameters.trim_pitch, _parameters.trim_pitch_vmax);
+					trim_yaw = math::gradual(airspeed, _parameters.airspeed_trim, _parameters.airspeed_max,
+								 _parameters.trim_yaw, _parameters.trim_yaw_vmax);
+				}
+
+				/* add trim increment if flaps are deployed  */
+				trim_roll += _flaps_applied * _parameters.dtrim_roll_flaps;
+				trim_pitch += _flaps_applied * _parameters.dtrim_pitch_flaps;
+
 				/* Run attitude controllers */
 				if (_vcontrol_mode.flag_control_attitude_enabled) {
 					if (PX4_ISFINITE(roll_sp) && PX4_ISFINITE(pitch_sp)) {
@@ -653,8 +714,8 @@ void FixedwingAttitudeControl::run()
 
 						/* Run attitude RATE controllers which need the desired attitudes from above, add trim */
 						float roll_u = _roll_ctrl.control_euler_rate(control_input);
-						_actuators.control[actuator_controls_s::INDEX_ROLL] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll :
-								_parameters.trim_roll;
+						_actuators.control[actuator_controls_s::INDEX_ROLL] = (PX4_ISFINITE(roll_u)) ? roll_u + trim_roll :
+								trim_roll;
 
 						if (!PX4_ISFINITE(roll_u)) {
 							_roll_ctrl.reset_integrator();
@@ -662,8 +723,8 @@ void FixedwingAttitudeControl::run()
 						}
 
 						float pitch_u = _pitch_ctrl.control_euler_rate(control_input);
-						_actuators.control[actuator_controls_s::INDEX_PITCH] = (PX4_ISFINITE(pitch_u)) ? pitch_u + _parameters.trim_pitch :
-								_parameters.trim_pitch;
+						_actuators.control[actuator_controls_s::INDEX_PITCH] = (PX4_ISFINITE(pitch_u)) ? pitch_u + trim_pitch :
+								trim_pitch;
 
 						if (!PX4_ISFINITE(pitch_u)) {
 							_pitch_ctrl.reset_integrator();
@@ -679,8 +740,8 @@ void FixedwingAttitudeControl::run()
 							yaw_u = _yaw_ctrl.control_euler_rate(control_input);
 						}
 
-						_actuators.control[actuator_controls_s::INDEX_YAW] = (PX4_ISFINITE(yaw_u)) ? yaw_u + _parameters.trim_yaw :
-								_parameters.trim_yaw;
+						_actuators.control[actuator_controls_s::INDEX_YAW] = (PX4_ISFINITE(yaw_u)) ? yaw_u + trim_yaw :
+								trim_yaw;
 
 						/* add in manual rudder control in manual modes */
 						if (_vcontrol_mode.flag_control_manual_enabled) {
@@ -747,16 +808,16 @@ void FixedwingAttitudeControl::run()
 					_yaw_ctrl.set_bodyrate_setpoint(_rates_sp.yaw);
 
 					float roll_u = _roll_ctrl.control_bodyrate(control_input);
-					_actuators.control[actuator_controls_s::INDEX_ROLL] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll :
+					_actuators.control[actuator_controls_s::INDEX_ROLL] = (PX4_ISFINITE(roll_u)) ? roll_u + trim_roll :
 							_parameters.trim_roll;
 
 					float pitch_u = _pitch_ctrl.control_bodyrate(control_input);
-					_actuators.control[actuator_controls_s::INDEX_PITCH] = (PX4_ISFINITE(pitch_u)) ? pitch_u + _parameters.trim_pitch :
-							_parameters.trim_pitch;
+					_actuators.control[actuator_controls_s::INDEX_PITCH] = (PX4_ISFINITE(pitch_u)) ? pitch_u + trim_pitch :
+							trim_pitch;
 
 					float yaw_u = _yaw_ctrl.control_bodyrate(control_input);
-					_actuators.control[actuator_controls_s::INDEX_YAW] = (PX4_ISFINITE(yaw_u)) ? yaw_u + _parameters.trim_yaw :
-							_parameters.trim_yaw;
+					_actuators.control[actuator_controls_s::INDEX_YAW] = (PX4_ISFINITE(yaw_u)) ? yaw_u + trim_yaw :
+							trim_yaw;
 
 					_actuators.control[actuator_controls_s::INDEX_THROTTLE] = PX4_ISFINITE(throttle_sp) ? throttle_sp : 0.0f;
 				}
