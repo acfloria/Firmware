@@ -1994,6 +1994,7 @@ Mavlink::task_main(int argc, char *argv[])
 
 	switch (_mode) {
 	case MAVLINK_MODE_NORMAL:
+		configure_stream("ACTUATOR_CONTROL_TARGET0", 10.0f);
 		configure_stream("SYS_STATUS", 1.0f);
 		configure_stream("EXTENDED_SYS_STATE", 1.0f);
 		configure_stream("HIGHRES_IMU", 1.5f);

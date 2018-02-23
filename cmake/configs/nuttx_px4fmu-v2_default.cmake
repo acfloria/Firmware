@@ -7,11 +7,11 @@ set(config_module_list
 	# Board support modules
 	#
 	#drivers/barometer
-	drivers/differential_pressure
+	#drivers/differential_pressure
 	#drivers/magnetometer
 	#drivers/telemetry
 
-	#drivers/imu/adis16448
+	drivers/imu/adis16448
 	drivers/airspeed
 	drivers/barometer/ms5611
 	#drivers/blinkm
@@ -21,6 +21,9 @@ set(config_module_list
 	#drivers/bst
 	drivers/camera_trigger
 	drivers/device
+	#drivers/differential_pressure/ms4525
+	#drivers/differential_pressure/ms5525
+	drivers/differential_pressure/sdp3x
 	#drivers/frsky_telemetry
 	drivers/gps
 	#drivers/hott
@@ -39,7 +42,7 @@ set(config_module_list
 	#drivers/protocol_splitter
 	drivers/pwm_input
 	drivers/pwm_out_sim
-	drivers/px4flow
+	#drivers/px4flow
 	drivers/px4fmu
 	drivers/px4io
 	drivers/rgbled
@@ -51,14 +54,14 @@ set(config_module_list
 
 	# distance sensors
 	drivers/distance_sensor/ll40ls
-	drivers/distance_sensor/mb12xx
-	drivers/distance_sensor/sf0x
-	drivers/distance_sensor/sf1xx
-	drivers/distance_sensor/srf02
-	drivers/distance_sensor/srf02_i2c
-	drivers/distance_sensor/teraranger
-	drivers/distance_sensor/tfmini
-	drivers/distance_sensor/ulanding
+	#drivers/distance_sensor/mb12xx
+	#drivers/distance_sensor/sf0x
+	#drivers/distance_sensor/sf1xx
+	#drivers/distance_sensor/srf02
+	#drivers/distance_sensor/srf02_i2c
+	#drivers/distance_sensor/teraranger
+	#drivers/distance_sensor/tfmini
+	#drivers/distance_sensor/ulanding
 	modules/sensors
 
 	#
@@ -81,7 +84,7 @@ set(config_module_list
 	systemcmds/reboot
 	#systemcmds/sd_bench
 	systemcmds/top
-	#systemcmds/topic_listener
+	systemcmds/topic_listener
 	systemcmds/tune_control
 	systemcmds/ver
 
@@ -127,9 +130,9 @@ set(config_module_list
 	modules/fw_pos_control_l1
 	#modules/gnd_att_control
 	#modules/gnd_pos_control
-	modules/mc_att_control
-	modules/mc_pos_control
-	modules/vtol_att_control
+	#modules/mc_att_control
+	#modules/mc_pos_control
+	#modules/vtol_att_control
 
 	#
 	# Logging
